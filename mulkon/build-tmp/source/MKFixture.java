@@ -43,8 +43,22 @@ public class MKFixture {
 		return this.verbindung.get_values_int();
 	}
 
-	public void set_values(String[] channels, int[] newval) {
-		this.verbindung.set_values_int(channels, newval);
+	public void set_values(String[] channels, int[] newvals) {
+		for(int i=0; i < channels.length; i++) {
+			this.channelValues.put(channels[i], newvals[i]);
+		}
+	}
+
+	public void send_values() {
+		this.verbindung.send_values(this.channelValues);
+	}
+
+	public int get_value_int(String channel) {
+		return channelValues.get(channel);
+	}
+
+	public String[] get_channelNames() {
+		return channelValues.keySet().toArray(new String[0]);
 	}
 
 

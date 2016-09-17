@@ -18,6 +18,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA  
  */
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Iterator;
 import oscP5.*;
 import netP5.*;
 
@@ -35,17 +38,21 @@ public class MKhttpVerbindung extends MKVerbindung{
 		return this.ip + port;
 	}
 
-	public void set_values_int(String[] channels, int[] newvals) {
-		for(int i=0; i < channels.length; i++) {
-			String newurl = this.get_remote_adress() + channels[1] + newvals[i];
+	public void send_values(Map<String, Integer> channelValues) {
+	    Iterator it = channelValues.entrySet().iterator();
+	    while (it.hasNext()) {
+	        Map.Entry pair = (Map.Entry)it.next();
+	        System.out.println(pair.getKey() + " = " + pair.getValue());
+
+			String newurl = this.get_remote_adress() + pair.getKey() + pair.getValue();
 			XMLReader response = new XMLReader();
 			try{
 	        	response.processDocument(newurl);
 	        } catch(Exception e) {
 	        	
 	        }
-		}
-
+	        it.remove(); // avoids a ConcurrentModificationException
+	    }
 	}
 
 	public int get_values_int() {

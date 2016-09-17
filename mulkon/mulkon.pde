@@ -5,6 +5,10 @@
  * 
  * http://forum.processing.org/topic/led-matrix-simulation
  */
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Iterator;
 import oscP5.*;
 import netP5.*;
 
@@ -27,9 +31,17 @@ void setup() {
 
   panel = new LEDPanel();
 
-  String newname = "lampe1";
-  String[] newchannels = {"1"};
-  myfix = new MKFixture(newname, newchannels, new MKOSCVerbindung("192.168.0.16", "12000"));
+  MKVerbindung oscverbindung = new MKOSCVerbindung("192.168.0.28", "12000", this);
+
+  String newname = "/1/rotary2";
+  String[] newchannels = {"/1/fader2", "/1/fader1"};
+  myfix = new MKFixture(newname, newchannels, oscverbindung);
+
+  int[] newvalues = {11,23};
+  myfix.set_values(newchannels, newvalues);
+  myfix.send_values();
+
+  // println(myfix.get_value_int("1"));
 }
 
 void draw() {
@@ -104,4 +116,47 @@ class LEDPanel {
     for (LED led: leds)  if (led.within(x, y))  return led;
     return null;
   }
+}
+
+class MKOSCVerbindung extends MKVerbindung{
+  public String name = "mkoscverbindung";
+  private String ip;
+  private String port;
+  private OscP5 oscP5;
+  private NetAddress theNetAddress;
+
+  public MKOSCVerbindung(String ip, String port, Object parent) {
+    this.ip = ip;
+    this.port = port;
+    int port_as_int = Integer.parseInt(this.port);
+    this.theNetAddress = new NetAddress(this.ip, port_as_int);
+    oscP5 = new OscP5(parent,12000);
+  }
+
+  public NetAddress get_remote_adress() {
+    return this.theNetAddress;
+  }
+
+  public void send_values(Map<String, Integer> channelValues) {
+    for (Map.Entry<String, Integer> entry : channelValues.entrySet()) {
+      String newAddress = entry.getKey();
+      System.out.println(newAddress);
+      OscMessage myMessage = new OscMessage(newAddress);
+      // System.out.println("mapsze: " + channelValues.size());
+      float newvalasfloat = (float) entry.getValue();
+      newvalasfloat = newvalasfloat /100;
+      myMessage.add(0.33);
+      System.out.println(myMessage);
+      oscP5.send(myMessage, this.theNetAddress);
+    }
+  }
+
+  public int get_values_int() {
+    return 0;
+
+  };
+
+
+
+  
 }

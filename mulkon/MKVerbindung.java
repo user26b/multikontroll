@@ -18,6 +18,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA  
  */
 
+import java.util.HashMap;
+import java.util.Map;
+
 public abstract class MKVerbindung {
 	public String name;
 	public String ip;
@@ -29,7 +32,7 @@ public abstract class MKVerbindung {
 		this.port = port;
 	}
 
-	abstract void set_values_int(String[] channels, int[] newval);
+	abstract void send_values(Map<String, Integer> channelValues);
 
 	abstract int get_values_int();
 
