@@ -29,9 +29,9 @@ public abstract class MKVerbindung {
 		this.port = port;
 	}
 
-	abstract void send_value_int(int newval, String channel);
+	abstract void set_values_int(String[] channels, int[] newval);
 
-	abstract int get_value_int();
+	abstract int get_values_int();
 
 
 

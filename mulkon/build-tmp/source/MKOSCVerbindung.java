@@ -37,13 +37,15 @@ public class MKOSCVerbindung extends MKVerbindung{
 		return new NetAddress(this.ip, port_as_int);
 	}
 
-	public void send_value_int(int newval, String channel) {
-		OscMessage myMessage = new OscMessage(channel);
-	    myMessage.add(newval);
+	public void set_values_int(String[] channels, int[] newvals) {
+		for(int i=0; i < channels.length; i++) {
+		OscMessage myMessage = new OscMessage(channels[i]);
+	    myMessage.add(newvals[i]);
 	    oscP5.send(myMessage, this.get_remote_adress());
+		}
 	}
 
-	public int get_value_int() {
+	public int get_values_int() {
 		return 0;
 
 	};

@@ -27,7 +27,9 @@ void setup() {
 
   panel = new LEDPanel();
 
-  myfix = new MKFixture("lampe1", "1", new MKOSCVerbindung("192.168.0.16", "12000"));
+  String newname = "lampe1";
+  String[] newchannels = {"1"};
+  myfix = new MKFixture(newname, newchannels, new MKOSCVerbindung("192.168.0.16", "12000"));
 }
 
 void draw() {

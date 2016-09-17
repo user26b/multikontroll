@@ -35,17 +35,20 @@ public class MKhttpVerbindung extends MKVerbindung{
 		return this.ip + port;
 	}
 
-	public void send_value_int(int newval, String channel) {
-		String newurl = this.get_remote_adress() + channel + newval;
-		XMLReader response = new XMLReader();
-		try{
-        	response.processDocument(newurl);
-        } catch(Exception e) {
-        	
-        }
+	public void set_values_int(String[] channels, int[] newvals) {
+		for(int i=0; i < channels.length; i++) {
+			String newurl = this.get_remote_adress() + channels[1] + newvals[i];
+			XMLReader response = new XMLReader();
+			try{
+	        	response.processDocument(newurl);
+	        } catch(Exception e) {
+	        	
+	        }
+		}
+
 	}
 
-	public int get_value_int() {
+	public int get_values_int() {
 		return 0;
 
 	};

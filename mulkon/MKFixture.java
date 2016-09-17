@@ -17,18 +17,21 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA  
  */
+import java.util.HashMap;
+import java.util.Map;
 
 public class MKFixture {
 	public String name;
 	public MKVerbindung verbindung;
-	private String channel;
-	private int value;
+	private Map<String, Integer> channelValues = new HashMap<String, Integer>();
 
-	public MKFixture (String name, String channel, MKVerbindung verbindung) {
+	public MKFixture (String name, String[] channels, MKVerbindung verbindung) {
+		int initValue = 0;
 		this.name = name;
 		this.verbindung = verbindung;
-		this.channel = channel;
-		this.value = 0;
+		for(int i=0; i < channels.length; i++) {
+			this.channelValues.put(channels[i], initValue);
+		}
 
 	}
 
@@ -36,12 +39,12 @@ public class MKFixture {
 	// 	return this.verbindung.recieve_this.values;
 	// }
 
-	public int get_value_int() {
-		return this.verbindung.get_value_int();
+	public int get_values_int() {
+		return this.verbindung.get_values_int();
 	}
 
-	public void set_values(int newval) {
-		this.verbindung.send_value_int(this.value, this.channel);
+	public void set_values(String[] channels, int[] newval) {
+		this.verbindung.set_values_int(channels, newval);
 	}
 
 
