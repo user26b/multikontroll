@@ -35,32 +35,26 @@ public class MKhttpVerbindung extends MKVerbindung{
 	}
 
 	public String get_remote_adress() {
-		return this.ip + port;
+		return this.ip + ":" + port;
 	}
 
 	public void send_values(Map<String, Integer> channelValues) {
-	    Iterator it = channelValues.entrySet().iterator();
-	    while (it.hasNext()) {
-	        Map.Entry pair = (Map.Entry)it.next();
-	        System.out.println(pair.getKey() + " = " + pair.getValue());
-
-			String newurl = this.get_remote_adress() + pair.getKey() + pair.getValue();
+    	for (Map.Entry<String, Integer> entry : channelValues.entrySet()) {
+			String newAddress = entry.getKey();
+			System.out.println(newAddress);
+			String newurl = this.get_remote_adress() + entry.getKey() + entry.getValue();
 			XMLReader response = new XMLReader();
 			try{
 	        	response.processDocument(newurl);
 	        } catch(Exception e) {
 	        	
 	        }
-	        it.remove(); // avoids a ConcurrentModificationException
-	    }
-	}
+		}
+ 	}
 
 	public int get_values_int() {
 		return 0;
-
-	};
-
-
+	}
 
   
 }

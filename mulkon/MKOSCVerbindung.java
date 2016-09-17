@@ -17,6 +17,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA  
  */
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Iterator;
@@ -30,37 +31,30 @@ public class MKOSCVerbindung extends MKVerbindung{
 	private OscP5 oscP5;
 	private NetAddress theNetAddress;
 
-	public MKOSCVerbindung(String ip, String port) {
-		this.ip = ip;
-		this.port = port;
-		int port_as_int = Integer.parseInt(this.port);
-		this.theNetAddress = new NetAddress(this.ip, port_as_int);
-	}
+  	public MKOSCVerbindung(String ip, String port, Object parent) {
+	    this.ip = ip;
+	    this.port = port;
+	    int port_as_int = Integer.parseInt(this.port);
+	    this.theNetAddress = new NetAddress(this.ip, port_as_int);
+	    oscP5 = new OscP5(parent,12000);
+  	}
 
-	public NetAddress get_remote_adress() {
-		return this.theNetAddress;
-	}
+  	public NetAddress get_remote_adress() {
+    	return this.theNetAddress;
+  	}
 
-	public void send_values(Map<String, Integer> channelValues) {
-		for (Map.Entry<String, Integer> entry : channelValues.entrySet()) {
+  	public void send_values(Map<String, Integer> channelValues) {
+    	for (Map.Entry<String, Integer> entry : channelValues.entrySet()) {
 			String newAddress = entry.getKey();
-			System.out.println(newAddress);
 			OscMessage myMessage = new OscMessage(newAddress);
-			// System.out.println("mapsze: " + channelValues.size());
 			float newvalasfloat = (float) entry.getValue();
 			newvalasfloat = newvalasfloat /100;
-		    myMessage.add(newvalasfloat);
-		    System.out.println(newvalasfloat);
-		    oscP5.send(myMessage, this.theNetAddress);
-			}
+			myMessage.add(newvalasfloat);
+			oscP5.send(myMessage, this.theNetAddress);
+		}
+ 	}
+
+  	public int get_values_int() {
+    	return 0;
 	}
-
-	public int get_values_int() {
-		return 0;
-
-	};
-
-
-
-  
 }

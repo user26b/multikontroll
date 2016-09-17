@@ -1,5 +1,5 @@
 /**
- * MKFixture.java.
+ * MKKontroller.java.
  *
  * Licensed under the LGPL License - http://www.gnu.org/licenses/lgpl.txt
  * 
@@ -21,19 +21,18 @@
 import java.util.HashMap;
 import java.util.Map;
 
-public class MKFixture {
+public class MKKontroller {
 	public String name;
 	public MKVerbindung verbindung;
 	private Map<String, Integer> channelValues = new HashMap<String, Integer>();
 
-	public MKFixture (String name, String[] channels, MKVerbindung verbindung) {
+	public MKKontroller (String name, String[] channels, MKVerbindung verbindung) {
 		int initValue = 0;
 		this.name = name;
 		this.verbindung = verbindung;
 		for(int i=0; i < channels.length; i++) {
 			this.channelValues.put(channels[i], initValue);
 		}
-
 	}
 
 	// public String[] get_values_string() {
@@ -71,6 +70,18 @@ public class MKFixture {
 	public String[] get_channelNames() {
 		return channelValues.keySet().toArray(new String[0]);
 	}
+
+	public void add_channel(String channel) {
+		int initValue = 0;
+		this.channelValues.put(channel, initValue);
+		}
+
+	public void add_channel(String[] channels) {
+		for(int i=0; i < channels.length; i++) {
+			this.add_channel(channels[i]);
+		}
+	}
+
 
 
   

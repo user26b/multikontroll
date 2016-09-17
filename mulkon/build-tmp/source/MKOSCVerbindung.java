@@ -24,37 +24,37 @@ import java.util.Iterator;
 import oscP5.*;
 import netP5.*;
 
-public class MKhttpVerbindung extends MKVerbindung{
-	public String name = "mkhttpverbindung";
+public class MKOSCVerbindung extends MKVerbindung{
+	public String name = "mkoscverbindung";
 	private String ip;
 	private String port;
+	private OscP5 oscP5;
+	private NetAddress theNetAddress;
 
-	public MKhttpVerbindung(String ip, String port) {
-		this.ip = ip;
-		this.port = port;
-	}
+  	public MKOSCVerbindung(String ip, String port, Object parent) {
+	    this.ip = ip;
+	    this.port = port;
+	    int port_as_int = Integer.parseInt(this.port);
+	    this.theNetAddress = new NetAddress(this.ip, port_as_int);
+	    oscP5 = new OscP5(parent,12000);
+  	}
 
-	public String get_remote_adress() {
-		return this.ip + ":" + port;
-	}
+  	public NetAddress get_remote_adress() {
+    	return this.theNetAddress;
+  	}
 
-	public void send_values(Map<String, Integer> channelValues) {
+  	public void send_values(Map<String, Integer> channelValues) {
     	for (Map.Entry<String, Integer> entry : channelValues.entrySet()) {
 			String newAddress = entry.getKey();
-			System.out.println(newAddress);
-			String newurl = this.get_remote_adress() + entry.getKey() + entry.getValue();
-			XMLReader response = new XMLReader();
-			try{
-	        	response.processDocument(newurl);
-	        } catch(Exception e) {
-	        	
-	        }
+			OscMessage myMessage = new OscMessage(newAddress);
+			float newvalasfloat = (float) entry.getValue();
+			newvalasfloat = newvalasfloat /100;
+			myMessage.add(newvalasfloat);
+			oscP5.send(myMessage, this.theNetAddress);
 		}
  	}
 
-	public int get_values_int() {
-		return 0;
+  	public int get_values_int() {
+    	return 0;
 	}
-
-  
 }

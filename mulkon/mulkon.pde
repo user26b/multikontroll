@@ -8,20 +8,31 @@
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Iterator;
 import oscP5.*;
 import netP5.*;
 
-final static color[] pallete = {
+final static int[] pallete = {
   #E65350, 
   #FAE400, 
   #A6E800, 
   #7C9CFF,
 };
 
-LEDPanel panel;
+final static int[] monochrome = {
+  #000000, 
+  #FFFFFF
+};
 
+
+final static int ncols = 6;
+final static int nrows = 8;
+
+LEDPanel panel;
+boolean ledmonochrome = true;
+
+MKVerbindung oscverbindung;
 MKFixture myfix;
+MKKontroller myosc1;
 
 void setup() {
   size(500, 500);
@@ -30,18 +41,27 @@ void setup() {
   background(0);
 
   panel = new LEDPanel();
+  oscverbindung = new MKOSCVerbindung("192.168.0.28", "12000", this);
 
-  MKVerbindung oscverbindung = new MKOSCVerbindung("192.168.0.28", "12000", this);
-
-  String newname = "/1/rotary2";
+  String newname = "lampe1";
   String[] newchannels = {"/1/fader2", "/1/fader1"};
   myfix = new MKFixture(newname, newchannels, oscverbindung);
 
-  int[] newvalues = {11,23};
-  myfix.set_values(newchannels, newvalues);
-  myfix.send_values();
+  // int[] newvalues = {11,99};
+  // myfix.set_values(newchannels, newvalues);
+  // myfix.send_values();
+  // myfix.setSend("/1/fader1", 60);
+  String stamm = "/1/toggle";
+  String[] newcontrlchannels = new String[nrows * ncols];
+  for(int i=0; i < nrows * ncols; i++) {
+    newcontrlchannels[i] = stamm + i;
+  }
+  // String[] newcontrlchannels = {"/1/toggle1", "/1/toggle2"};
+  // int[] newcontrlvalues = {1,1};
+  myosc1 = new MKKontroller("osc1",newcontrlchannels, oscverbindung);
 
-  // println(myfix.get_value_int("1"));
+  // myosc1.set_values(newcontrlchannels, newcontrlvalues);
+  // myosc1.send_values();
 }
 
 void draw() {
@@ -53,20 +73,17 @@ void mouseMoved() {
   panel.within(mouseX, mouseY).pulse();
 }
 
-class LED {
-  final PVector pos;
-  final int w, h;
+class LED extends MKPixel{
+  final static int ausgangsfarbe = #000000;
+  int zielfarbe = pallete[(int) random(pallete.length)];
+  boolean mono = ledmonochrome;
 
-  final static color STANDARD = #010101;
-  final color chosen = pallete[(int) random(pallete.length)];
-
-  color c;
-  float amt;
-
-  LED(PVector position, int ww, int hh) {
-    pos = position;
-    w = ww;
-    h = hh;
+  LED(MKVektor position, int ww, int hh) {
+    super(position, ww, hh);
+    c = #FFFFFF;
+    if (mono) {
+      zielfarbe = monochrome[1];
+    }
   }
 
   void go() {
@@ -79,7 +96,9 @@ class LED {
   }
 
   void update() {
-    if ((amt -= .01) > 0)  c = lerpColor(STANDARD, chosen, amt);
+    int newcol;
+    newcol = lerpColor(ausgangsfarbe, zielfarbe, amt);
+    if ((amt -= .01) > 0)  c = newcol;
   }
 
   void display() {
@@ -87,76 +106,51 @@ class LED {
     rect(pos.x, pos.y, w, h);
   }
 
-  boolean within(int x, int y) {
-    return x >= pos.x & y >= pos.y & x < pos.x + w & y < pos.y + h;
-  }
 }
 
-class LEDPanel {
+public class LEDPanel {
   final static int ROWS = 10, COLS = 10;
   final LED[] leds = new LED[ROWS*COLS];
 
-  LEDPanel() {
+  public LEDPanel() {
     final int w = width/ROWS;
     final int h = height/COLS;
 
     for (int i=0; i!=ROWS; i++)  for (int j=0; j!=COLS; j++)
-      leds[i*COLS + j] = new LED(new PVector(i*w, j*h), w, h);
+      leds[i*COLS + j] = new LED(new MKVektor(i*w, j*h), w, h);
   }
 
-  void go() {
+  public void go() {
     for (LED led: leds)  led.go();
   }
 
-  LED randomLED() {
+  public LED randomLED() {
     return leds[(int) random(ROWS*COLS)];
   }
 
-  LED within(int x, int y) {
+  public LED within(int x, int y) {
     for (LED led: leds)  if (led.within(x, y))  return led;
     return null;
   }
 }
 
-class MKOSCVerbindung extends MKVerbindung{
-  public String name = "mkoscverbindung";
-  private String ip;
-  private String port;
-  private OscP5 oscP5;
-  private NetAddress theNetAddress;
 
-  public MKOSCVerbindung(String ip, String port, Object parent) {
-    this.ip = ip;
-    this.port = port;
-    int port_as_int = Integer.parseInt(this.port);
-    this.theNetAddress = new NetAddress(this.ip, port_as_int);
-    oscP5 = new OscP5(parent,12000);
-  }
 
-  public NetAddress get_remote_adress() {
-    return this.theNetAddress;
-  }
 
-  public void send_values(Map<String, Integer> channelValues) {
-    for (Map.Entry<String, Integer> entry : channelValues.entrySet()) {
-      String newAddress = entry.getKey();
-      System.out.println(newAddress);
-      OscMessage myMessage = new OscMessage(newAddress);
-      // System.out.println("mapsze: " + channelValues.size());
-      float newvalasfloat = (float) entry.getValue();
-      newvalasfloat = newvalasfloat /100;
-      myMessage.add(0.33);
-      System.out.println(myMessage);
-      oscP5.send(myMessage, this.theNetAddress);
+void oscEvent(OscMessage theOscMessage) {
+  String[] newvlcstatus;
+  // print("### received an osc message.");
+  // print(" addrpattern: "+theOscMessage.addrPattern());
+  // print(" firstval: "+theOscMessage.get(0).floatValue());
+  // println(" typetag: "+theOscMessage.typetag());
+
+  // match statt checkAddrPattern 
+  if(match(theOscMessage.addrPattern(), "/1/toggle") != null) {
+    int addrNr = int(split(theOscMessage.addrPattern(), "/1/toggle")[1]);
+    if(theOscMessage.checkTypetag("f")) {
+      float firstValue = theOscMessage.get(0).floatValue(); // get the second osc argument
+      panel.leds[int(addrNr) - 1].pulse();
+      return;
     }
   }
-
-  public int get_values_int() {
-    return 0;
-
-  };
-
-
-
-  
 }

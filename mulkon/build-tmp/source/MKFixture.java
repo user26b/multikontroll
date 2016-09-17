@@ -17,6 +17,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA  
  */
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,6 +52,16 @@ public class MKFixture {
 
 	public void send_values() {
 		this.verbindung.send_values(this.channelValues);
+	}
+
+	public void setSend(String channel, int newval) {
+		this.channelValues.put(channel, newval);
+		this.send_values();
+	}
+
+	public void setSend_values(String[] channels, int[] newvals) {
+		this.set_values(channels, newvals);
+		this.send_values();
 	}
 
 	public int get_value_int(String channel) {
