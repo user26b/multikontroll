@@ -8,6 +8,7 @@
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ArrayList;
 import oscP5.*;
 import netP5.*;
 
@@ -27,15 +28,20 @@ final static int[] monochrome = {
 final static int ncols = 6;
 final static int nrows = 8;
 
+final static int dispsizex = ncols * 100;
+final static int dispsizey = nrows * 100;
+
 LEDPanel panel;
 boolean ledmonochrome = true;
 
 MKVerbindung oscverbindung;
 MKFixture myfix;
+MKStage mystage;
 MKKontroller myosc1;
 
 void setup() {
-  size(500, 500);
+  frameRate(25);
+  size(600, 800);
   stroke(0);
   strokeWeight(2);
   background(0);
@@ -43,9 +49,17 @@ void setup() {
   panel = new LEDPanel();
   oscverbindung = new MKOSCVerbindung("192.168.0.28", "12000", this);
 
-  String newname = "lampe1";
+  mystage = new MKStage();
+
+  for(int i=0; i < nrows*ncols; i++) {
+      String newname = "pixel" + i;
+      String[] newchannels = {"/1/toggle" + i};
+      mystage.add_fixture(new MKFixture(newname, newchannels, oscverbindung));    
+  }
+
+  String newname = "strahler1";
   String[] newchannels = {"/1/fader2", "/1/fader1"};
-  myfix = new MKFixture(newname, newchannels, oscverbindung);
+  mystage.add_fixture(new MKFixture(newname, newchannels, oscverbindung));
 
   // int[] newvalues = {11,99};
   // myfix.set_values(newchannels, newvalues);
@@ -65,8 +79,9 @@ void setup() {
 }
 
 void draw() {
-  if (frameCount % 5 == 0)  panel.randomLED().pulse();
+  // if (frameCount % 5 == 0)  panel.randomLED().pulse();
   panel.go();
+  if (frameCount % 5 == 0) mystage.update_all();
 }
 
 void mouseMoved() {
@@ -109,23 +124,25 @@ class LED extends MKPixel{
 }
 
 public class LEDPanel {
-  final static int ROWS = 10, COLS = 10;
-  final LED[] leds = new LED[ROWS*COLS];
+  final LED[] leds = new LED[nrows*ncols];
 
   public LEDPanel() {
-    final int w = width/ROWS;
-    final int h = height/COLS;
+    final int w = width/ncols;
+    final int h = height/nrows;
 
-    for (int i=0; i!=ROWS; i++)  for (int j=0; j!=COLS; j++)
-      leds[i*COLS + j] = new LED(new MKVektor(i*w, j*h), w, h);
+    for (int i=0; i!=nrows; i++)  for (int j=0; j!=ncols; j++)
+      leds[i*ncols + j] = new LED(new MKVektor(j*w, i*h), w, h);
   }
 
   public void go() {
-    for (LED led: leds)  led.go();
+    for (int i=0; i < leds.length; i++) {
+      leds[i].go();
+      mystage.get_fixture("pixel" + (i + 1)).set_value("/1/toggle" + (i + 1), (int) (leds[i].amt+1));
+    }
   }
 
   public LED randomLED() {
-    return leds[(int) random(ROWS*COLS)];
+    return leds[(int) random(nrows*ncols)];
   }
 
   public LED within(int x, int y) {

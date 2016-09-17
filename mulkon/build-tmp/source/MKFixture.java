@@ -50,6 +50,10 @@ public class MKFixture {
 		}
 	}
 
+	public void set_value(String channel, int newval) {
+		this.channelValues.put(channel, newval);
+	}
+
 	public void send_values() {
 		this.verbindung.send_values(this.channelValues);
 	}
